@@ -1,6 +1,7 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:expressions/expressions.dart';
+import 'dart:math';
 
 void main() {
   runApp(CalculatorApp());
@@ -33,15 +34,29 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         try {
           final expression = Expression.parse(_expression);
           final evaluator = const ExpressionEvaluator();
-          final result = evaluator.eval(expression, {});
+          final result = evaluator.eval(expression, {
+            'pow': (a, b) => pow(a, b),
+          });
           _result = ' = $result';
         } catch (e) {
           _result = ' = Error';
+        }
+      } else if (value == '^2') {
+        final lastNumber = _getLastNumber(_expression);
+        if (lastNumber != null) {
+          _expression =
+              _expression.substring(0, _expression.length - lastNumber.length) +
+                  'pow($lastNumber, 2)';
         }
       } else {
         _expression += value;
       }
     });
+  }
+
+  String? _getLastNumber(String expression) {
+    final match = RegExp(r'(\d+)$').firstMatch(expression);
+    return match?.group(0);
   }
 
   Widget _buildButton(String value) {
@@ -116,6 +131,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   _buildButton('C'),
                   _buildButton('='),
                   _buildButton('+'),
+                ],
+              ),
+              Row(
+                children: [
+                  _buildButton('^2'),
                 ],
               ),
             ],
